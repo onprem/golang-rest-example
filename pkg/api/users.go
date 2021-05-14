@@ -8,22 +8,22 @@ import (
 	"github.com/go-kit/kit/log/level"
 )
 
-func (a *API) handleGetUsers(w http.ResponseWriter, r *http.Request) {
-	l := log.With(a.logger, "handler", "getusers")
+func (a *API) getUsersHandler(l log.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		users, err := a.store.GetUsers(r.Context())
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"status": "error",
+				"msg":    "something went wrong",
+			})
+			level.Error(l).Log("msg", "getting users from store", "err", err)
+			return
+		}
 
-	users, err := a.store.GetUsers(r.Context())
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"status": "error",
-			"msg":    "something went wrong",
+			"status": "success",
+			"users":  users,
 		})
-		level.Error(l).Log("msg", "getting users from store", "err", err)
-		return
 	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status": "success",
-		"users":  users,
-	})
 }
