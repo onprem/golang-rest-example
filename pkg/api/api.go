@@ -10,17 +10,26 @@ import (
 	"github.com/go-kit/kit/log/level"
 	"github.com/metalmatze/signal/server/signalhttp"
 	"github.com/onprem/go-db-example/pkg/store"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 type API struct {
 	store  *store.Store
 	logger log.Logger
+
+	userCreateCounter prometheus.Counter
 }
 
-func New(store *store.Store, logger log.Logger) *API {
+func New(store *store.Store, logger log.Logger, reg prometheus.Registerer) *API {
 	return &API{
 		store:  store,
 		logger: logger,
+		userCreateCounter: promauto.With(reg).NewCounter(prometheus.CounterOpts{
+			Namespace: "godb",
+			Name:      "user_created_total",
+			Help:      "Total number of users created by godb api.",
+		}),
 	}
 }
 

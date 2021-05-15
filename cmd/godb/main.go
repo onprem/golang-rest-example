@@ -44,7 +44,7 @@ func main() {
 	r := chi.NewRouter()
 
 	str := store.New(client)
-	apy := api.New(str, log.With(logger, "component", "api"))
+	apy := api.New(str, log.With(logger, "component", "api"), prometheus.DefaultRegisterer)
 
 	r.Handle("/metrics", promhttp.Handler())
 

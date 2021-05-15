@@ -40,6 +40,7 @@ func (a *API) createUserHandler(l log.Logger) http.HandlerFunc {
 			return
 		}
 
+		a.userCreateCounter.Inc()
 		respondSuccess(w, l, "successfully created user", usr)
 	}
 }
