@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/metalmatze/signal/server/signalhttp"
 	"github.com/onprem/go-db-example/ent"
 	"github.com/onprem/go-db-example/pkg/api"
 	"github.com/onprem/go-db-example/pkg/store"
@@ -14,6 +15,8 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -43,8 +46,12 @@ func main() {
 	str := store.New(client)
 	apy := api.New(str, log.With(logger, "component", "api"))
 
+	r.Handle("/metrics", promhttp.Handler())
+
+	ins := signalhttp.NewHandlerInstrumenter(prometheus.DefaultRegisterer, []string{"group", "handler"})
+
 	r.Route("/api", func(r chi.Router) {
-		apy.Register(r)
+		apy.Register(r, ins)
 	})
 
 	level.Info(logger).Log("msg", "starting web server", "addr", address)

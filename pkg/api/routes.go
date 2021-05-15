@@ -1,13 +1,28 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-kit/kit/log"
+	"github.com/metalmatze/signal/server/signalhttp"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
-func (a *API) registerRoutes(r chi.Router) {
-	r.Get("/users", a.getUsersHandler(log.With(a.logger, "handler", "getUsers")))
-	r.Post("/user", a.createUserHandler(log.With(a.logger, "handler", "createUser")))
-	r.Delete("/user", a.deleteUserHandler(log.With(a.logger, "handler", "deleteUser")))
-	r.Patch("/user", a.updateUserHandler(log.With(a.logger, "handler", "updateUser")))
+func (a *API) registerRoutes(r chi.Router, ins signalhttp.HandlerInstrumenter) {
+	r.Get("/users", a.newHandler("getUsers", ins, a.getUsersHandler))
+	r.Post("/user", a.newHandler("createUser", ins, a.createUserHandler))
+	r.Delete("/user", a.newHandler("deleteUser", ins, a.deleteUserHandler))
+	r.Patch("/user", a.newHandler("updateUser", ins, a.updateUserHandler))
+}
+
+func (a *API) newHandler(
+	id string,
+	ins signalhttp.HandlerInstrumenter,
+	fn func(log.Logger) http.HandlerFunc,
+) http.HandlerFunc {
+	return ins.NewHandler(
+		prometheus.Labels{"group": "api", "handler": id},
+		fn(log.With(a.logger, "handler", id)),
+	)
 }

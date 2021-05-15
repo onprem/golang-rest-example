@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/metalmatze/signal/server/signalhttp"
 	"github.com/onprem/go-db-example/pkg/store"
 )
 
@@ -23,8 +24,8 @@ func New(store *store.Store, logger log.Logger) *API {
 	}
 }
 
-func (a *API) Register(r chi.Router) {
-	a.registerRoutes(r)
+func (a *API) Register(r chi.Router, ins signalhttp.HandlerInstrumenter) {
+	a.registerRoutes(r, ins)
 }
 
 type res struct {
