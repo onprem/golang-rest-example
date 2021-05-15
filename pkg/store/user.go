@@ -16,3 +16,7 @@ func (s *Store) CreateUser(ctx context.Context, name string, age int) (*ent.User
 		SetAge(age).
 		Save(ctx)
 }
+
+func (s *Store) DeleteUser(ctx context.Context, id int) error {
+	return s.db.User.DeleteOneID(id).Exec(ctx)
+}
